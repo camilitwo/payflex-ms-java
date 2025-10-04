@@ -1,0 +1,27 @@
+server:
+  port: 8082
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8081/.well-known/jwks.json
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+server.error.include-message: always
+server.error.include-binding-errors: always
+
+management:
+  endpoints.web.exposure.include: health,info
+
+logging:
+  level:
+    com.payflex.orchestrator: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.http.codec: TRACE

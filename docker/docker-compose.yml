@@ -1,0 +1,19 @@
+version: "3.9"
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: ["redis-server","--appendonly","yes"]
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: payflex
+      POSTGRES_PASSWORD: payflex
+      POSTGRES_DB: payflex
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:

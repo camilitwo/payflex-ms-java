@@ -1,0 +1,13 @@
+/target
+/.idea
+/.project
+/.settings
+/.classpath
+*.iml
+.DS_Store
+.env
+
+# Project exclude paths
+/api-gateway/target/
+/auth-bff/target/
+/payment-orchestrator/target/
