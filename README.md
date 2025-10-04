@@ -132,4 +132,3 @@ Cliente → API Gateway (8080) → Payment Orchestrator (8082)
 - ✅ `IdempotencyFilter`: Uso de `HttpMethod` enum y `getMethod()`
 - ✅ `application.yml`: Consolidación de secciones `spring:` duplicadas
 
-¡A construir PayFlex! 🚀
