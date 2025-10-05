@@ -1,4 +1,4 @@
-package com.payflex.merchant.dto;
+package com.payflex.auth.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,8 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MerchantResponse {
-
+public class MeMerchantDto {
     private String merchantId;
     private String businessName;
     private String legalName;
@@ -25,9 +24,8 @@ public class MerchantResponse {
     private Boolean onboardingCompleted;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    // Balance information
     private BigDecimal availableBalance;
     private BigDecimal pendingBalance;
     private String currency;
 }
+

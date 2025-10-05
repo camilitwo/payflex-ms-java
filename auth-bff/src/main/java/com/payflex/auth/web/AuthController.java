@@ -5,6 +5,7 @@ import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JOSEException;
 import com.payflex.auth.client.MerchantServiceClient;
 import com.payflex.auth.pb.PocketBaseClient;
 import com.payflex.auth.pb.PocketBaseProperties;
@@ -28,12 +29,18 @@ public class AuthController {
   private final PocketBaseClient pb;
   private final PocketBaseProperties cfg;
   private final MerchantServiceClient merchantServiceClient;
+  private final RSASSASigner signer; // Reusable signer
 
   public AuthController(JwkProvider jwkProvider, PocketBaseClient pb, PocketBaseProperties cfg, MerchantServiceClient merchantServiceClient){
     this.jwkProvider = jwkProvider;
     this.pb = pb;
     this.cfg = cfg;
     this.merchantServiceClient = merchantServiceClient;
+    try {
+      this.signer = new RSASSASigner(jwkProvider.getRsaKey().toPrivateKey());
+    } catch (JOSEException e) {
+      throw new IllegalStateException("Unable to initialize RSASSASigner: " + e.getMessage(), e);
+    }
   }
 
   @Value("${auth.issuer}") String issuer;
@@ -196,7 +203,7 @@ public class AuthController {
   }
 
   private String signJwt(String userId, String merchantId, List<String> roles, List<String> scopes, Instant iat, Instant exp){
-    try{
+    try {
       Map<String,Object> claims = new LinkedHashMap<>();
       claims.put("iss", issuer);
       claims.put("aud", audience);
@@ -215,9 +222,10 @@ public class AuthController {
           .build();
 
       var jws = new JWSObject(header, new Payload(claims));
-      var signer = new RSASSASigner(jwkProvider.getRsaKey().toPrivateKey());
-      jws.sign(signer);
+      jws.sign(signer); // Puede lanzar JOSEException
       return jws.serialize();
-    }catch(Exception e){ throw new IllegalStateException(e); }
+    } catch (JOSEException e) {
+      throw new IllegalStateException("JWT_SIGN_ERROR: " + e.getMessage(), e);
+    }
   }
 }

@@ -2,6 +2,8 @@ package com.payflex.merchant.service;
 
 import com.payflex.merchant.dto.CreateMerchantRequest;
 import com.payflex.merchant.dto.MerchantResponse;
+import com.payflex.merchant.dto.MerchantConfigResponse;
+import com.payflex.merchant.dto.MerchantUserResponse;
 import com.payflex.merchant.model.Merchant;
 import com.payflex.merchant.model.MerchantBalance;
 import com.payflex.merchant.model.MerchantPaymentConfig;
@@ -255,6 +257,43 @@ public class MerchantService {
         return merchantRepository.findById(merchantId)
             .map(merchant -> "active".equalsIgnoreCase(merchant.getStatus()))
             .defaultIfEmpty(false);
+    }
+
+    public Flux<MerchantUserResponse> getMerchantUsers(String merchantId) {
+        return merchantUserRepository.findByMerchantId(merchantId)
+            .map(mu -> MerchantUserResponse.builder()
+                .userId(mu.getUserId())
+                .merchantId(mu.getMerchantId())
+                .email(mu.getEmail())
+                .name(mu.getName())
+                .phone(mu.getPhone())
+                .role(mu.getRole())
+                .status(mu.getStatus())
+                .emailVerified(Boolean.TRUE.equals(mu.getEmailVerified()))
+                .lastLoginAt(mu.getLastLoginAt())
+                .createdAt(mu.getCreatedAt())
+                .updatedAt(mu.getUpdatedAt())
+                .build());
+    }
+
+    public Mono<MerchantConfigResponse> getMerchantConfig(String merchantId) {
+        return paymentConfigRepository.findByMerchantId(merchantId)
+            .map(cfg -> MerchantConfigResponse.builder()
+                .merchantId(cfg.getMerchantId())
+                .defaultCurrency(cfg.getDefaultCurrency())
+                .paymentMethodsEnabled(cfg.getPaymentMethodsEnabled())
+                .autoCapture(cfg.getAutoCapture())
+                .webhookUrl(cfg.getWebhookUrl())
+                .statementDescriptor(cfg.getStatementDescriptor())
+                .createdAt(cfg.getCreatedAt())
+                .updatedAt(cfg.getUpdatedAt())
+                .build())
+            .switchIfEmpty(Mono.just(MerchantConfigResponse.builder()
+                .merchantId(merchantId)
+                .defaultCurrency("CLP")
+                .paymentMethodsEnabled("[\"card\",\"transfer\"]")
+                .autoCapture(true)
+                .build()));
     }
 
     private MerchantResponse mapToResponse(Merchant merchant, MerchantBalance balance) {

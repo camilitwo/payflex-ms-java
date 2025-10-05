@@ -1,7 +1,9 @@
 package com.payflex.merchant.web;
 
 import com.payflex.merchant.dto.CreateMerchantRequest;
+import com.payflex.merchant.dto.MerchantConfigResponse;
 import com.payflex.merchant.dto.MerchantResponse;
+import com.payflex.merchant.dto.MerchantUserResponse;
 import com.payflex.merchant.service.MerchantService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,5 +62,17 @@ public class MerchantController {
     public Mono<Boolean> validateMerchant(@PathVariable String merchantId) {
         log.debug("Received request to validate merchant: {}", merchantId);
         return merchantService.validateMerchant(merchantId);
+    }
+
+    @GetMapping("/{merchantId}/users")
+    public Flux<MerchantUserResponse> getMerchantUsers(@PathVariable String merchantId) {
+        log.info("Received request to get merchant users: {}", merchantId);
+        return merchantService.getMerchantUsers(merchantId);
+    }
+
+    @GetMapping("/{merchantId}/config")
+    public Mono<MerchantConfigResponse> getMerchantConfig(@PathVariable String merchantId) {
+        log.info("Received request to get merchant config: {}", merchantId);
+        return merchantService.getMerchantConfig(merchantId);
     }
 }

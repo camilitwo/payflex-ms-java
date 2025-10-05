@@ -5,29 +5,23 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MerchantResponse {
-
+public class MerchantUserResponse {
+    private String userId;
     private String merchantId;
-    private String businessName;
-    private String legalName;
-    private String taxId;
     private String email;
+    private String name;
     private String phone;
-    private String website;
+    private String role;
     private String status;
-    private Boolean onboardingCompleted;
+    private Boolean emailVerified;
+    private LocalDateTime lastLoginAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    // Balance information
-    private BigDecimal availableBalance;
-    private BigDecimal pendingBalance;
-    private String currency;
 }
+
