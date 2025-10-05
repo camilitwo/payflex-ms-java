@@ -19,5 +19,9 @@ pocketbase:
   merchantField: merchantId
   rolesField: roles
 
+merchant:
+  service:
+    url: http://localhost:8083
+
 management:
   endpoints.web.exposure.include: health,info

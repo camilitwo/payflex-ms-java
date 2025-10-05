@@ -5,6 +5,7 @@ import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.JOSEObjectType;
+import com.payflex.auth.client.MerchantServiceClient;
 import com.payflex.auth.pb.PocketBaseClient;
 import com.payflex.auth.pb.PocketBaseProperties;
 import com.payflex.auth.security.JwkProvider;
@@ -26,11 +27,13 @@ public class AuthController {
   private final JwkProvider jwkProvider;
   private final PocketBaseClient pb;
   private final PocketBaseProperties cfg;
+  private final MerchantServiceClient merchantServiceClient;
 
-  public AuthController(JwkProvider jwkProvider, PocketBaseClient pb, PocketBaseProperties cfg){
+  public AuthController(JwkProvider jwkProvider, PocketBaseClient pb, PocketBaseProperties cfg, MerchantServiceClient merchantServiceClient){
     this.jwkProvider = jwkProvider;
     this.pb = pb;
     this.cfg = cfg;
+    this.merchantServiceClient = merchantServiceClient;
   }
 
   @Value("${auth.issuer}") String issuer;
@@ -40,10 +43,107 @@ public class AuthController {
   @Value("${auth.cookie.name}") String cookieName;
 
   record LoginReq(@NotBlank String email, @NotBlank String password) {}
-  record TokenRes(String accessToken, long expiresInSeconds) {}
+  record RegisterReq(
+      @NotBlank String email,
+      @NotBlank String password,
+      @NotBlank String passwordConfirm,
+      @NotBlank String name,
+      String merchantId,
+      List<String> roles
+  ) {}
+  record TokenRes(
+      String accessToken,
+      long expiresInSeconds,
+      String userId,
+      String merchantId,
+      List<String> roles
+  ) {}
+  record UserRes(
+      String id,
+      String email,
+      String name,
+      String merchantId,
+      List<String> roles,
+      String created
+  ) {}
 
   @GetMapping("/.well-known/jwks.json")
   public Map<String,Object> jwks(){ return jwkProvider.jwksJson(); }
+
+  @PostMapping("/auth/register")
+  public Mono<ResponseEntity<UserRes>> register(@RequestBody RegisterReq req){
+    System.out.println("[AUTH][REGISTER] Iniciando registro email=" + req.email());
+
+    Map<String, Object> userData = new java.util.LinkedHashMap<>();
+    userData.put("email", req.email());
+    userData.put("password", req.password());
+    userData.put("passwordConfirm", req.passwordConfirm());
+    userData.put("name", req.name());
+
+    if (req.merchantId() != null && !req.merchantId().isBlank()) {
+      System.out.println("[AUTH][REGISTER] merchantId provisto=" + req.merchantId());
+      userData.put("merchantId", req.merchantId());
+    }
+
+    List<String> roles = req.roles() != null && !req.roles().isEmpty()
+        ? req.roles()
+        : List.of("MERCHANT_ADMIN");
+    userData.put("roles", roles);
+    System.out.println("[AUTH][REGISTER] Roles a asignar=" + roles);
+
+    return pb.createUser(userData)
+        .doOnSubscribe(s -> System.out.println("[AUTH][PB] Creando usuario en PocketBase..."))
+        .doOnError(err -> System.err.println("[AUTH][PB][ERROR] Falló creación PB: " + err.getMessage()))
+        .flatMap(response -> {
+          System.out.println("[AUTH][PB] Usuario creado en PB: " + response);
+          String userId = (String) response.get("id");
+          String email = (String) response.get("email");
+          String name = (String) response.get("name");
+          String created = (String) response.get("created");
+
+          String merchantId = (String) response.getOrDefault("merchantId", null);
+          if (merchantId == null || merchantId.isBlank()) {
+            merchantId = "mrc_" + userId.substring(0, Math.min(8, userId.length()));
+            System.out.println("[AUTH][REGISTER] Generado merchantId=" + merchantId);
+          }
+
+          Object rolesObj = response.get("roles");
+          @SuppressWarnings("unchecked")
+          List<String> userRoles = rolesObj instanceof List<?>
+              ? ((List<?>) rolesObj).stream().map(String::valueOf).toList()
+              : roles;
+
+          Map<String, Object> merchantRequest = new LinkedHashMap<>();
+          merchantRequest.put("userId", userId);
+          merchantRequest.put("merchantId", merchantId);
+          merchantRequest.put("email", email);
+          merchantRequest.put("businessName", name + "'s Business");
+          merchantRequest.put("businessType", "RETAIL");
+          merchantRequest.put("taxId", "PENDING");
+          merchantRequest.put("phone", "");
+          merchantRequest.put("address", "");
+            merchantRequest.put("city", "");
+          merchantRequest.put("country", "Chile");
+          merchantRequest.put("role", userRoles.isEmpty() ? "MERCHANT_ADMIN" : userRoles.get(0));
+
+          System.out.println("[AUTH][REGISTER] Llamando merchant-service payload=" + merchantRequest);
+
+          final String finalMerchantId = merchantId;
+          final List<String> finalRoles = userRoles;
+
+          return merchantServiceClient.createMerchant(merchantRequest)
+              .doOnSubscribe(s -> System.out.println("[AUTH][MS] Invocando merchant-service ..."))
+              .doOnSuccess(m -> System.out.println("[AUTH][MS] Respuesta merchant-service=" + m))
+              .doOnError(error -> System.err.println("[AUTH][MS][ERROR] merchant-service: " + error.getMessage()))
+              .thenReturn(ResponseEntity.ok(new UserRes(userId, email, name, finalMerchantId, finalRoles, created)))
+              .onErrorResume(error -> {
+                System.err.println("[AUTH][REGISTER][WARN] Continuando sin merchant en PG: " + error.getMessage());
+                return Mono.just(ResponseEntity.ok(new UserRes(userId, email, name, finalMerchantId, finalRoles, created)));
+              });
+        })
+        .doOnSuccess(r -> System.out.println("[AUTH][REGISTER] Flujo completo OK userId=" + r.getBody().id()))
+        .doOnError(err -> System.err.println("[AUTH][REGISTER][ERROR] Flujo falló: " + err.getMessage()));
+  }
 
   @PostMapping("/auth/login")
   public Mono<ResponseEntity<TokenRes>> login(@RequestBody LoginReq req){
@@ -74,7 +174,7 @@ public class AuthController {
 
           return ResponseEntity.ok()
               .header("Set-Cookie", refreshCookie.toString())
-              .body(new TokenRes(accessJwt, accessExp.getEpochSecond() - now.getEpochSecond()));
+              .body(new TokenRes(accessJwt, accessExp.getEpochSecond() - now.getEpochSecond(), userId, merchantId, roles));
         });
   }
 
@@ -85,7 +185,7 @@ public class AuthController {
     var now = Instant.now();
     var accessExp = now.plusSeconds(accessTtlMin * 60);
     var accessJwt = signJwt("user-unknown","mrc_unknown", List.of("MERCHANT_ADMIN"), List.of("payments:read","payments:write"), now, accessExp);
-    return ResponseEntity.ok(new TokenRes(accessJwt, accessExp.getEpochSecond() - now.getEpochSecond()));
+    return ResponseEntity.ok(new TokenRes(accessJwt, accessExp.getEpochSecond() - now.getEpochSecond(), "user-unknown", "mrc_unknown", List.of("MERCHANT_ADMIN")));
   }
 
   @PostMapping("/auth/logout")

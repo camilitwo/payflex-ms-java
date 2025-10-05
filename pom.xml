@@ -10,6 +10,7 @@
     <module>auth-bff</module>
     <module>api-gateway</module>
     <module>payment-orchestrator</module>
+    <module>merchant-service</module>
   </modules>
 
   <properties>
