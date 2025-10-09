@@ -6,8 +6,13 @@
 *.iml
 .DS_Store
 .env
+*.sh
 
 # Project exclude paths
 /api-gateway/target/
 /auth-bff/target/
 /payment-orchestrator/target/
+/merchant-service/target/
+/merchant-service/init-postgres.sql
+
+

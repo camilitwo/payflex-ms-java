@@ -152,7 +152,7 @@ public class AuthController {
         .doOnError(err -> System.err.println("[AUTH][REGISTER][ERROR] Flujo falló: " + err.getMessage()));
   }
 
-  @PostMapping("/auth/login")
+  q
   public Mono<ResponseEntity<TokenRes>> login(@RequestBody LoginReq req){
     return pb.authWithPassword(req.email(), req.password())
         .map(res -> {
