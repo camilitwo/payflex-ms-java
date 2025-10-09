@@ -21,6 +21,9 @@ COPY api-gateway/src ./api-gateway/src
 # Construir solo el módulo api-gateway
 RUN mvn clean package -pl api-gateway -am -DskipTests
 
+# Verificar que el JAR se creó correctamente
+RUN ls -la /build/api-gateway/target/
+
 # Etapa final con JRE mínimo
 FROM eclipse-temurin:21-jre-alpine
 
@@ -28,10 +31,11 @@ WORKDIR /app
 
 # Crear usuario no-root para mayor seguridad
 RUN addgroup -S spring && adduser -S spring -G spring
-USER spring:spring
 
-# Copiar el JAR desde la etapa de build
-COPY --from=build /build/api-gateway/target/*.jar app.jar
+# Copiar el JAR desde la etapa de build con el nombre específico
+COPY --from=build --chown=spring:spring /build/api-gateway/target/api-gateway-*.jar app.jar
+
+USER spring:spring
 
 # Railway asigna automáticamente PORT
 EXPOSE 8080
@@ -40,4 +44,3 @@ EXPOSE 8080
 ENV JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
-
