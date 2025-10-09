@@ -1,27 +1,31 @@
 server:
-  port: 8081
+  port: ${PORT:8081}
 
 auth:
-  issuer: https://auth.payflex.local
+  issuer: ${AUTH_ISSUER:https://auth.payflex.local}
   audience: payflex-apis
   access-token-ttl-minutes: 10
   refresh-token-ttl-days: 30
   cookie:
     name: session
-    domain: localhost
-    secure: true
+    domain: ${COOKIE_DOMAIN:localhost}
+    secure: ${COOKIE_SECURE:false}
     sameSite: Lax
     httpOnly: true
 
 pocketbase:
-  url: http://localhost:8090
+  url: ${POCKETBASE_URL:http://localhost:8090}
   collection: users
   merchantField: merchantId
   rolesField: roles
 
 merchant:
   service:
-    url: http://localhost:8083
+    url: ${MERCHANT_SERVICE_URL:http://localhost:8083}
 
 management:
   endpoints.web.exposure.include: health,info
+
+logging:
+  level:
+    com.payflex.auth: ${LOG_LEVEL:INFO}

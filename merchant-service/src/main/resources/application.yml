@@ -1,14 +1,14 @@
 server:
-  port: 8083
+  port: ${PORT:8083}
 
 spring:
   application:
     name: merchant-service
 
   r2dbc:
-    url: r2dbc:postgresql://localhost:5432/payflex
-    username: payflex
-    password: payflex
+    url: ${R2DBC_URL:r2dbc:postgresql://localhost:5432/payflex}
+    username: ${PGUSER:payflex}
+    password: ${PGPASSWORD:payflex}
     pool:
       initial-size: 5
       max-size: 20
@@ -17,17 +17,17 @@ spring:
 
   flyway:
     enabled: true
-    url: jdbc:postgresql://localhost:5432/payflex
-    user: payflex
-    password: payflex
+    url: ${JDBC_URL:jdbc:postgresql://localhost:5432/payflex}
+    user: ${PGUSER:payflex}
+    password: ${PGPASSWORD:payflex}
     locations: classpath:db/migration
     baseline-on-migrate: true
 
 logging:
   level:
-    com.payflex.merchant: DEBUG
-    org.springframework.r2dbc: DEBUG
-    io.r2dbc.postgresql: DEBUG
+    com.payflex.merchant: ${LOG_LEVEL:INFO}
+    org.springframework.r2dbc: INFO
+    io.r2dbc.postgresql: INFO
 
 management:
   endpoints:
@@ -37,4 +37,3 @@ management:
   endpoint:
     health:
       show-details: always
-

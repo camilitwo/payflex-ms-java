@@ -1,0 +1,15 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "cd auth-bff && ../mvnw -DskipTests package"
+  },
+  "deploy": {
+    "startCommand": "java -Dserver.port=$PORT -jar auth-bff/target/auth-bff-1.0.0.jar",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10,
+    "healthcheckPath": "/actuator/health",
+    "healthcheckTimeout": 300
+  }
+}
+

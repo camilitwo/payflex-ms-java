@@ -1,0 +1,18 @@
+# Railway ignore - archivos que no se necesitan en el build
+*.md
+!RAILWAY_SETUP.md
+!QUICK_START_RAILWAY.md
+.git
+.gitignore
+*.sh
+test-*.sh
+docker/
+.env
+.env.*
+!.env.railway
+*.log
+target/
+.idea/
+.vscode/
+*.iml
+
