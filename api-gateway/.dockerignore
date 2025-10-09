@@ -1,0 +1,9 @@
+
+# Railway asigna automáticamente PORT
+EXPOSE 8080
+
+# Configuración JVM optimizada para Railway
+ENV JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+

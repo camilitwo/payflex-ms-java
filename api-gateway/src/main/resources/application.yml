@@ -1,19 +1,19 @@
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 spring:
   security:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://localhost:8081/.well-known/jwks.json
+          jwk-set-uri: ${AUTH_BFF_URL:http://localhost:8081}/.well-known/jwks.json
   cloud:
     gateway:
       default-filters:
         - RemoveRequestHeader=Cookie
       routes:
         - id: orchestrator
-          uri: http://localhost:8082
+          uri: ${ORCHESTRATOR_URL:http://localhost:8082}
           predicates:
             - Path=/api/payments/**
           filters:
@@ -24,5 +24,5 @@ management:
 
 logging:
   level:
-    org.springframework.security: DEBUG
-    org.springframework.security.oauth2: DEBUG
+    org.springframework.security: ${LOG_LEVEL:DEBUG}
+    org.springframework.security.oauth2: ${LOG_LEVEL:DEBUG}
