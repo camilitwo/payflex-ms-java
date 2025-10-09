@@ -5,7 +5,7 @@
     "buildCommand": "cd .. && mvn clean package -DskipTests -pl payment-orchestrator -am"
   },
   "deploy": {
-    "startCommand": "java -Dserver.port=$PORT ${JAVA_TOOL_OPTIONS:--XX:+UseContainerSupport -XX:MaxRAMPercentage=70 -Xmx512m} -jar target/payment-orchestrator-1.0.0.jar",
+    "startCommand": "java -Dserver.port=$PORT ${JAVA_TOOL_OPTIONS:--XX:+UseContainerSupport -XX:MaxRAMPercentage=70 -Xmx512m} -jar ./target/payment-orchestrator-1.0.0.jar",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10,
     "healthcheckPath": "/actuator/health",
