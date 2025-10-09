@@ -1,0 +1,23 @@
+[phases.setup]
+nixPkgs = ["jdk21"]
+
+[phases.install]
+cmds = ["echo 'Using pre-installed Maven'"]
+
+[phases.build]
+cmds = ["mvn clean package -DskipTests -pl payment-orchestrator -am"]
+
+[start]
+cmd = "java -Dserver.port=$PORT $JAVA_TOOL_OPTIONS -jar payment-orchestrator/target/payment-orchestrator-1.0.0.jar"
+[phases.setup]
+nixPkgs = ["jdk21"]
+
+[phases.install]
+cmds = ["echo 'Using pre-installed Maven'"]
+
+[phases.build]
+cmds = ["mvn clean package -DskipTests -pl api-gateway -am"]
+
+[start]
+cmd = "java -Dserver.port=$PORT $JAVA_TOOL_OPTIONS -jar api-gateway/target/api-gateway-1.0.0.jar"
+
