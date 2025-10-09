@@ -1,0 +1,7 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile.api-gateway"
+
+[deploy]
+startCommand = "java $JAVA_OPTS -jar app.jar"
+
