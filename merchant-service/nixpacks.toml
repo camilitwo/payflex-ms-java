@@ -5,8 +5,7 @@ nixPkgs = ["jdk21"]
 cmds = ["echo 'Using pre-installed Maven'"]
 
 [phases.build]
-cmds = ["mvn clean package -DskipTests -pl merchant-service -am"]
+cmds = ["cd .. && mvn clean package -DskipTests -pl merchant-service -am"]
 
 [start]
-cmd = "java -Dserver.port=$PORT $JAVA_TOOL_OPTIONS -jar merchant-service/target/merchant-service-1.0.0.jar"
-
+cmd = "java -Dserver.port=$PORT ${JAVA_TOOL_OPTIONS:--XX:+UseContainerSupport -XX:MaxRAMPercentage=70 -Xmx512m} -jar target/merchant-service-1.0.0.jar"

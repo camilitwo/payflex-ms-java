@@ -1,0 +1,12 @@
+[phases.setup]
+nixPkgs = ["jdk21"]
+
+[phases.install]
+cmds = ["echo 'Using pre-installed Maven'"]
+
+[phases.build]
+cmds = ["cd .. && mvn clean package -DskipTests -pl api-gateway -am"]
+
+[start]
+cmd = "java -Dserver.port=$PORT ${JAVA_TOOL_OPTIONS:--XX:+UseContainerSupport -XX:MaxRAMPercentage=70 -Xmx512m} -jar target/api-gateway-1.0.0.jar"
+
