@@ -2,25 +2,13 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "cd payment-orchestrator && ../mvnw -DskipTests package"
+    "buildCommand": "mvn clean package -DskipTests -pl payment-orchestrator -am"
   },
   "deploy": {
-    "startCommand": "java -Dserver.port=$PORT -jar payment-orchestrator/target/payment-orchestrator-1.0.0.jar",
+    "startCommand": "java -Dserver.port=$PORT $JAVA_TOOL_OPTIONS -jar payment-orchestrator/target/payment-orchestrator-1.0.0.jar",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10,
     "healthcheckPath": "/actuator/health",
     "healthcheckTimeout": 300
   }
 }
-{
-  "$schema": "https://railway.app/railway.schema.json",
-  "build": {
-    "builder": "NIXPACKS"
-  },
-  "deploy": {
-    "startCommand": "./mvnw -DskipTests package && java -Dserver.port=$PORT -jar target/*.jar",
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10
-  }
-}
-

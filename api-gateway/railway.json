@@ -2,14 +2,13 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "cd api-gateway && ../mvnw -DskipTests package"
+    "buildCommand": "mvn clean package -DskipTests -pl api-gateway -am"
   },
   "deploy": {
-    "startCommand": "java -Dserver.port=$PORT -jar api-gateway/target/api-gateway-1.0.0.jar",
+    "startCommand": "java -Dserver.port=$PORT $JAVA_TOOL_OPTIONS -jar api-gateway/target/api-gateway-1.0.0.jar",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10,
     "healthcheckPath": "/actuator/health",
     "healthcheckTimeout": 300
   }
 }
-
