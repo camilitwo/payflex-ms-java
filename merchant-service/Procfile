@@ -1,2 +1,1 @@
 web: java -Dserver.port=$PORT $JAVA_TOOL_OPTIONS -jar merchant-service/target/merchant-service-1.0.0.jar
-

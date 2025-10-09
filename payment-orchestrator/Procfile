@@ -1,3 +1,1 @@
 web: java -Dserver.port=$PORT $JAVA_TOOL_OPTIONS -jar payment-orchestrator/target/payment-orchestrator-1.0.0.jar
-web: java -Dserver.port=$PORT $JAVA_TOOL_OPTIONS -jar api-gateway/target/api-gateway-1.0.0.jar
-

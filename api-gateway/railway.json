@@ -1,8 +1,7 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "NIXPACKS",
-    "buildCommand": "mvn clean package -DskipTests -pl api-gateway -am"
+    "builder": "NIXPACKS"
   },
   "deploy": {
     "startCommand": "java -Dserver.port=$PORT $JAVA_TOOL_OPTIONS -jar api-gateway/target/api-gateway-1.0.0.jar",

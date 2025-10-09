@@ -1,0 +1,2 @@
+web: java -Dserver.port=$PORT $JAVA_TOOL_OPTIONS -jar api-gateway/target/api-gateway-1.0.0.jar
+

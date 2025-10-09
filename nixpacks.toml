@@ -2,8 +2,7 @@
 nixPkgs = ["maven", "jdk21"]
 
 [phases.build]
-cmds = ["mvn clean package -DskipTests"]
+cmds = ["mvn clean package -DskipTests -pl api-gateway,auth-bff,merchant-service,payment-orchestrator -am"]
 
 [start]
-cmd = "java -Dserver.port=$PORT $JAVA_TOOL_OPTIONS -jar target/*.jar"
-
+cmd = "echo 'Build completed. Use service-specific start command.'"
