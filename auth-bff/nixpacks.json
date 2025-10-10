@@ -1,0 +1,9 @@
+{
+  "build": {
+    "cmd": "cd .. && mvn clean package -pl auth-bff -am -DskipTests && cp auth-bff/target/*.jar auth-bff/app.jar"
+  },
+  "start": {
+    "cmd": "java -Xmx512m -Xms256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -jar app.jar"
+  }
+}
+

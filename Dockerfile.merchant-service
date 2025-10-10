@@ -1,0 +1,47 @@
+# Multi-stage build para Merchant Service
+FROM maven:3.9-eclipse-temurin-21-alpine AS build
+
+WORKDIR /build
+
+# Copiar el pom.xml del padre
+COPY pom.xml ./
+
+# Copiar los poms de todos los módulos
+COPY api-gateway/pom.xml ./api-gateway/
+COPY auth-bff/pom.xml ./auth-bff/
+COPY merchant-service/pom.xml ./merchant-service/
+COPY payment-orchestrator/pom.xml ./payment-orchestrator/
+
+# Descargar dependencias (se cachea esta capa)
+RUN mvn dependency:go-offline -B -pl merchant-service -am || true
+
+# Copiar el código fuente del merchant-service
+COPY merchant-service/src ./merchant-service/src
+
+# Construir solo el módulo merchant-service
+RUN mvn clean package -pl merchant-service -am -DskipTests
+
+# Verificar que el JAR se creó correctamente
+RUN ls -la /build/merchant-service/target/
+
+# Etapa final con JRE mínimo
+FROM eclipse-temurin:21-jre-alpine
+
+WORKDIR /app
+
+# Crear usuario no-root para mayor seguridad
+RUN addgroup -S spring && adduser -S spring -G spring
+
+# Copiar el JAR desde la etapa de build con el nombre específico
+COPY --from=build --chown=spring:spring /build/merchant-service/target/merchant-service-*.jar app.jar
+
+USER spring:spring
+
+# Railway asigna automáticamente PORT
+EXPOSE 8080
+
+# Configuración JVM optimizada para Railway
+ENV JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+
