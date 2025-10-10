@@ -1,9 +1,16 @@
 {
-  "build": {
-    "cmd": "cd .. && mvn clean package -pl payment-orchestrator -am -DskipTests && cp payment-orchestrator/target/*.jar payment-orchestrator/app.jar"
-  },
-  "start": {
-    "cmd": "java -Xmx512m -Xms256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -jar app.jar"
+  "phases": {
+    "setup": {
+      "nixPkgs": ["java", "maven"]
+    },
+    "build": {
+      "cmds": [
+        "cd .. && mvn clean package -pl payment-orchestrator -am -DskipTests",
+        "cp ../payment-orchestrator/target/payment-orchestrator-*.jar app.jar"
+      ]
+    },
+    "start": {
+      "cmd": "java -Dserver.port=$PORT -Xmx512m -Xms256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -jar app.jar"
+    }
   }
 }
-
